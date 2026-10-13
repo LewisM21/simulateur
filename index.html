@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+img { max-width: 100%; }
+</style>
+<title>Simulateur Clim'O'Froid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Mise en page : une question par écran dans une colonne étroite, puis le résultat sur le même fil */
+:root {
+  --bg: #F2F5F9;
+  --surface: #FFFFFF;
+  --ink: #0F1B2D;
+  --muted: #55627A;
+  --line: #D6DEEA;
+  --brand: #0B5ED7;
+  --brand-ink: #FFFFFF;
+  --brand-soft: #E3EDFC;
+  --chaud: #C2410C;
+  --vert: #0B7F57;
+  --vert-soft: #DCF3E9;
+  --alerte-soft: #FFF3D1;
+  --voile: rgb(15 27 45 / .55);
+  --ombre: 0 1px 2px rgb(15 27 45 / .06), 0 10px 28px rgb(15 27 45 / .09);
+  --qr-fond: #FFFFFF;
+  --qr-encre: #000000;
+  --f-titre: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+  --f-texte: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1220; --surface: #131D30; --ink: #E7EDF6; --muted: #9AA8BF; --line: #27344D;
+    --brand: #5B9BFF; --brand-ink: #0B1220; --brand-soft: #17294A;
+    --chaud: #FB8A4C; --vert: #3DD39B; --vert-soft: #11302A; --alerte-soft: #382D10;
+    --voile: rgb(0 0 0 / .65); --ombre: 0 1px 2px rgb(0 0 0 / .4), 0 10px 28px rgb(0 0 0 / .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1220; --surface: #131D30; --ink: #E7EDF6; --muted: #9AA8BF; --line: #27344D;
+  --brand: #5B9BFF; --brand-ink: #0B1220; --brand-soft: #17294A;
+  --chaud: #FB8A4C; --vert: #3DD39B; --vert-soft: #11302A; --alerte-soft: #382D10;
+  --voile: rgb(0 0 0 / .65); --ombre: 0 1px 2px rgb(0 0 0 / .4), 0 10px 28px rgb(0 0 0 / .35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { height: 100%; }
+body { min-height: 100%; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--f-texte); font-size: 16px; line-height: 1.5; }
+h1, h2, h3 { font-family: var(--f-titre); text-wrap: balance; margin: 0; }
+p { margin: 0; }
+button, input { font: inherit; color: inherit; }
+a { color: var(--brand); }
+button:focus-visible, summary:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+
+.bandeau {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+  padding-inline: 16px; padding-block: 8px; background: var(--brand-soft); font-size: 14px;
+}
+.lien-bouton {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 12px;
+  border: 1.5px solid var(--brand); border-radius: 999px; background: var(--surface); color: var(--brand);
+  font-weight: 700; font-size: 14px; cursor: pointer;
+}
+.lien-bouton svg { width: 18px; height: 18px; }
+
+.assistant { width: 100%; max-width: 680px; margin-inline: auto; padding-inline: 16px; padding-block: 16px 48px; display: grid; gap: 16px; }
+@media (min-width: 600px) { .assistant { padding-inline: 24px; padding-block: 28px 64px; } }
+
+/* --- Navigation et progression --- */
+.nav { display: flex; align-items: center; gap: 12px; min-height: 40px; }
+.btn-retour { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 4px; border: 0; background: none; color: var(--brand); font-weight: 700; cursor: pointer; }
+.btn-retour svg { width: 18px; height: 18px; }
+.progres-texte { margin-left: auto; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.progres { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.progres-rempli { height: 100%; border-radius: 3px; background: var(--brand); transition: width .35s ease; }
+
+/* --- Une question --- */
+.etape { display: grid; gap: 14px; padding-top: 16px; }
+.accueil { display: grid; gap: 8px; }
+.surtitre { font-size: 13px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.chapo { color: var(--muted); font-size: 17px; max-width: 52ch; }
+.question { font-size: clamp(28px, 5.6vw, 42px); font-weight: 800; font-stretch: 110%; line-height: 1.08; letter-spacing: -.01em; }
+.question:focus, .v-label:focus { outline: none; }
+.aide { color: var(--muted); max-width: 56ch; }
+
+.options { display: grid; gap: 10px; margin-top: 10px; }
+.option {
+  display: grid; gap: 4px; width: 100%; min-height: 64px; padding: 16px 18px; text-align: left; cursor: pointer;
+  border: 1.5px solid var(--line); border-radius: 14px; background: var(--surface);
+  transition: border-color .15s, background-color .15s;
+}
+.option strong { font-size: 18px; }
+.option span { font-size: 15px; color: var(--muted); }
+.option:hover { border-color: var(--brand); }
+.option[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); box-shadow: inset 0 0 0 1px var(--brand); }
+@media (min-width: 560px) { .options.deux { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.options.tuiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (min-width: 560px) { .options.tuiles { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.options.tuiles .option { min-height: 72px; padding: 8px; place-items: center; text-align: center; }
+.pieces-liste { display: grid; gap: 12px 16px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.piece { display: grid; gap: 4px; min-width: 0; font-size: 15px; font-weight: 700; }
+.piece .champ { max-width: none; }
+.piece .champ input { font-family: var(--f-titre); font-size: 20px; font-weight: 700; }
+.total { color: var(--muted); }
+.total b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.options.tuiles .option strong { font-family: var(--f-titre); font-size: clamp(24px, 6vw, 34px); font-weight: 800; }
+
+.saisie { display: grid; gap: 14px; margin-top: 10px; }
+.champ { display: flex; align-items: stretch; max-width: 240px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); }
+.champ:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.champ input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 10px 12px; font-size: 17px; font-variant-numeric: tabular-nums; outline: none; }
+.champ .unite { display: grid; place-items: center; padding-inline: 12px; border-left: 1px solid var(--line); color: var(--muted); font-size: 15px; white-space: nowrap; }
+.champ.grand { max-width: 320px; }
+.champ.grand input { padding: 12px 16px; font-family: var(--f-titre); font-size: 30px; font-weight: 700; }
+.champ.grand .unite { font-size: 17px; }
+.erreur { color: var(--chaud); font-weight: 700; font-size: 15px; }
+.boutons { display: flex; flex-wrap: wrap; gap: 10px; }
+.primaire {
+  width: 100%; min-height: 50px; padding: 13px 22px; border: 0; border-radius: 12px; cursor: pointer;
+  background: var(--brand); color: var(--brand-ink); font-weight: 700; font-size: 17px;
+}
+.primaire:hover { filter: brightness(1.06); }
+.boutons .primaire { width: auto; min-width: 180px; }
+.secondaire {
+  min-height: 50px; padding: 12px 20px; border: 1.5px solid var(--line); border-radius: 12px; cursor: pointer;
+  background: var(--surface); font-weight: 700; font-size: 17px;
+}
+.secondaire:hover { border-color: var(--brand); }
+@media (max-width: 479px) { .boutons > * { flex: 1 1 100%; } }
+
+.entree-avant { animation: depuis-droite .3s ease both; }
+.entree-arriere { animation: depuis-gauche .3s ease both; }
+@keyframes depuis-droite { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes depuis-gauche { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+
+/* --- Résultat --- */
+.resultat { display: grid; gap: 26px; padding-top: 16px; }
+.eco { display: grid; gap: 8px; }
+.v-label { font-family: var(--f-texte); font-size: 13px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.v-eco { font-family: var(--f-titre); font-weight: 850; font-stretch: 116%; font-size: clamp(52px, 11vw, 80px); line-height: .95; color: var(--vert); font-variant-numeric: tabular-nums; }
+.v-eco small { font-size: .36em; font-weight: 700; font-stretch: 100%; color: var(--ink); margin-left: 6px; }
+.v-sous { color: var(--muted); font-size: 17px; }
+.recap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.recap-lib { font-size: 14px; color: var(--muted); margin-right: 2px; }
+.puce { padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 14px; cursor: pointer; }
+.puce:hover { border-color: var(--brand); color: var(--brand); }
+
+.barres { display: grid; gap: 14px; }
+.barre { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+.barre .montant { font-weight: 700; font-variant-numeric: tabular-nums; }
+.piste { grid-column: 1 / -1; height: 14px; border-radius: 7px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+.rempli { height: 100%; border-radius: 7px; transition: width .45s ease; }
+.rempli.avant { background: var(--chaud); }
+.rempli.apres { background: var(--vert); }
+
+.faits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.fait { font-size: 14px; color: var(--muted); }
+.fait strong { display: block; font-family: var(--f-titre); font-size: 24px; font-stretch: 108%; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.notes { display: grid; gap: 10px; }
+.note { padding: 12px 14px; border-radius: 10px; background: var(--alerte-soft); font-size: 15px; }
+
+.bloc { display: grid; gap: 10px; padding-top: 22px; border-top: 1px solid var(--line); }
+.bloc h2 { font-size: 24px; font-stretch: 106%; }
+.v-prix { font-family: var(--f-titre); font-weight: 800; font-stretch: 108%; font-size: clamp(30px, 6vw, 40px); line-height: 1.05; font-variant-numeric: tabular-nums; }
+.v-prix small { font-size: .45em; font-weight: 700; color: var(--muted); }
+.tva { padding: 10px 14px; border-radius: 10px; background: var(--brand-soft); font-size: 15px; }
+.legende { font-size: 14px; color: var(--muted); }
+.rentab { justify-self: start; padding: 4px 12px; border-radius: 999px; background: var(--vert-soft); font-weight: 700; font-size: 15px; }
+
+.cta form { display: grid; gap: 12px; }
+.duo { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 480px) { .duo { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cta label.l { display: grid; gap: 4px; font-size: 14px; font-weight: 700; min-width: 0; }
+.cta input[type="text"], .cta input[type="tel"], .cta input[type="email"] {
+  width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 16px; font-weight: 400;
+}
+.cta input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.case { display: inline-flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 14px; }
+.case input { width: 20px; height: 20px; margin-top: 1px; flex: none; accent-color: var(--brand); }
+.merci { padding: 12px 14px; border-radius: 10px; background: var(--vert-soft); font-size: 15px; }
+
+.hypotheses { border-top: 1px solid var(--line); padding-top: 18px; }
+.hypotheses summary { cursor: pointer; font-family: var(--f-titre); font-weight: 700; font-size: 18px; font-stretch: 104%; }
+.hyp-corps { display: grid; gap: 20px; padding-top: 18px; }
+.hyp-grille { display: grid; gap: 14px 20px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.hyp-grille label { display: grid; gap: 4px; font-size: 14px; font-weight: 700; }
+.hyp-grille .champ { max-width: none; }
+.hyp-liste { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--muted); font-size: 15px; }
+
+.pied { margin-top: auto; padding: 16px; text-align: center; font-size: 12px; color: var(--muted); }
+
+/* --- QR --- */
+.voile { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: var(--voile); }
+.qr-boite { width: 100%; max-width: 380px; display: grid; gap: 14px; padding: 24px; border-radius: 16px; background: var(--surface); color: var(--ink); text-align: center; box-shadow: var(--ombre); }
+.qr-boite h2 { font-size: 22px; }
+.qr-code { justify-self: center; width: min(260px, 100%); padding: 24px; border-radius: 10px; background: var(--qr-fond); color: var(--qr-encre); }
+.qr-code svg { display: block; width: 100%; height: auto; }
+.qr-url { font-size: 13px; word-break: break-all; color: var(--muted); user-select: all; }
+.qr-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.qr-note { font-size: 13px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rempli, .progres-rempli, .option { transition: none; }
+  .entree-avant, .entree-arriere { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="bandeau">
+  <span><strong>Version de test</strong> · aucune donnée n'est envoyée</span>
+  <button type="button" class="lien-bouton" id="btnQR" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+    Ouvrir sur un autre appareil
+  </button>
+</div>
+
+<main class="assistant">
+  <div class="nav">
+    <button type="button" class="btn-retour" id="btnRetour" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      Retour
+    </button>
+    <span class="progres-texte" id="progresTexte"></span>
+  </div>
+  <div class="progres" aria-hidden="true"><div class="progres-rempli" id="progresBarre" style="width:0"></div></div>
+
+  <section class="etape" id="etape" aria-labelledby="qTitre">
+    <div class="accueil" id="accueil">
+      <p class="surtitre">Clim'O'Froid · Simulateur d'économies</p>
+      <p class="chapo">Quelques questions, une minute. Votre économie et votre budget s'affichent tout de suite, sans engagement.</p>
+    </div>
+    <h1 class="question" id="qTitre" tabindex="-1"></h1>
+    <p class="aide" id="qAide"></p>
+    <div id="qCorps"></div>
+  </section>
+
+  <section class="resultat" id="resultat" hidden aria-labelledby="resTitre">
+    <div class="eco">
+      <h1 class="v-label" id="resTitre" tabindex="-1">Votre économie estimée</h1>
+      <p class="v-eco" id="ecoVal">—</p>
+      <p class="v-sous" id="ecoSous"></p>
+      <div class="recap" id="recap"></div>
+    </div>
+
+    <div class="barres">
+      <div class="barre">
+        <span id="avantLib">Aujourd'hui</span><span class="montant" id="avantVal">—</span>
+        <div class="piste"><div class="rempli avant" id="avantBarre" style="width:0"></div></div>
+      </div>
+      <div class="barre">
+        <span>Avec la pompe à chaleur</span><span class="montant" id="apresVal">—</span>
+        <div class="piste"><div class="rempli apres" id="apresBarre" style="width:0"></div></div>
+      </div>
+    </div>
+
+    <div class="faits">
+      <p class="fait"><strong id="quinzeVal">—</strong>économisés sur 15 ans</p>
+      <p class="fait"><strong id="co2Val">—</strong>de CO₂ en moins par an</p>
+    </div>
+
+    <div class="notes" id="notes"></div>
+
+    <div class="bloc">
+      <span class="v-label" id="budgetLib">Votre budget, pose comprise</span>
+      <p class="v-prix" id="prixVal">—</p>
+      <p class="tva"><b>TVA 6 %</b> sur l'installation d'une pompe à chaleur, pour toutes les habitations, quel que soit leur âge.</p>
+      <p class="legende" id="prixLegende"></p>
+      <p class="rentab" id="rentab" hidden></p>
+    </div>
+
+    <div class="bloc cta">
+      <h2>Le prix exact, après une visite gratuite</h2>
+      <form id="demande" novalidate>
+        <div class="duo">
+          <label class="l" for="dNom">Nom<input type="text" id="dNom" autocomplete="name"></label>
+          <label class="l" for="dTel">Téléphone<input type="tel" id="dTel" autocomplete="tel"></label>
+        </div>
+        <div class="duo">
+          <label class="l" for="dEmail">E-mail<input type="email" id="dEmail" autocomplete="email"></label>
+          <label class="l" for="dCommune">Commune<input type="text" id="dCommune" autocomplete="address-level2"></label>
+        </div>
+        <label class="case" for="dAccord"><input type="checkbox" id="dAccord"> J'accepte d'être recontacté pour cette demande. Mes coordonnées ne servent à rien d'autre.</label>
+        <p class="note" id="dErreur" hidden></p>
+        <button type="submit" class="primaire">Demander ma visite gratuite</button>
+        <p class="merci" id="merci" hidden><b>Version de test :</b> rien n'a été envoyé. Dans la version en ligne, la demande arrivera au bureau par e-mail avec le résumé de cette simulation.</p>
+      </form>
+      <div class="boutons"><button type="button" class="secondaire" id="btnRecommencer">Recommencer la simulation</button></div>
+    </div>
+
+    <details class="hypotheses" id="hypotheses">
+      <summary>Comment on calcule</summary>
+      <div class="hyp-corps">
+        <div class="hyp-grille">
+          <label for="hElec">Électricité<div class="champ"><input type="number" id="hElec" step="0.01" min="0" value="0.30"><span class="unite">€ / kWh</span></div></label>
+          <label for="hMazout">Mazout<div class="champ"><input type="number" id="hMazout" step="0.01" min="0" value="1.00"><span class="unite">€ / litre</span></div></label>
+          <label for="hGaz">Gaz naturel<div class="champ"><input type="number" id="hGaz" step="0.01" min="0" value="0.09"><span class="unite">€ / kWh</span></div></label>
+          <label for="hPellets">Pellets<div class="champ"><input type="number" id="hPellets" step="10" min="0" value="360"><span class="unite">€ / tonne</span></div></label>
+          <label for="hScopAA">SCOP air/air retenu<div class="champ"><input type="number" id="hScopAA" step="0.1" min="1" value="3.8"></div></label>
+          <label for="hScopSol">SCOP air/eau, sol<div class="champ"><input type="number" id="hScopSol" step="0.1" min="1" value="4.0"></div></label>
+          <label for="hScopBT">SCOP air/eau, radiateurs récents<div class="champ"><input type="number" id="hScopBT" step="0.1" min="1" value="3.0"></div></label>
+          <label for="hScopHT">SCOP air/eau, radiateurs anciens<div class="champ"><input type="number" id="hScopHT" step="0.1" min="1" value="2.6"></div></label>
+        </div>
+        <ul class="hyp-liste">
+          <li>Prix de l'énergie TVAC, à tenir à jour deux fois par an. Mazout : 10 kWh par litre. Pellets : 4,8 kWh par kg.</li>
+          <li>Rendement du chauffage actuel : mazout 85 %, gaz 90 %, pellets 85 %, électrique 100 %.</li>
+          <li>SCOP : les machines posées affichent 4,1 à 5,2 en air/air, et 4,7 à 35 °C ou 3,5 à 55 °C en air/eau (catalogue Ecodan). Le calcul retient des valeurs plus basses pour rester prudent.</li>
+          <li>Air/air : seules les pièces équipées comptent. Chaleur nécessaire = leur surface × 60, 110 ou 170 kWh par m² et par an selon l'isolation.</li>
+          <li>Air/eau : toute la maison, d'après la facture de chauffage ; si elle est inconnue, surface chauffée × les mêmes valeurs.</li>
+          <li>CO₂ par kWh consommé : mazout 267 g, gaz 202 g, pellets 30 g, électricité 150 g.</li>
+          <li>Budget hors TVA. Un quart de nos devis avec le même nombre de pièces sont moins chers que la fourchette, un quart plus chers. Avant primes.</li>
+          <li>Retour sur investissement : affiché seulement s'il est de 10 ans au plus. Calculé sur le prix TVA 6 % comprise, sans hausse des prix de l'énergie.</li>
+          <li>Estimation indicative. Le prix exact se fixe après la visite.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+</main>
+
+<footer class="pied">Clim'O'Froid SPRL · Soignies · Estimation indicative, qui ne remplace pas un devis.</footer>
+
+<div class="voile" id="qr" hidden role="dialog" aria-modal="true" aria-labelledby="qrTitre">
+  <div class="qr-boite">
+    <h2 id="qrTitre">Ouvrir sur un autre appareil</h2>
+    <p class="qr-note">Scannez avec l'appareil photo du téléphone ou de la tablette.</p>
+    <div class="qr-code" id="qrCode"><svg viewBox="0 0 29 29" role="img" aria-label="QR code de cette page" shape-rendering="crispEdges"><path fill="currentColor" d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM11 0h1v1h-1zM13 0h1v1h-1zM15 0h1v1h-1zM16 0h1v1h-1zM18 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM25 0h1v1h-1zM26 0h1v1h-1zM27 0h1v1h-1zM28 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM11 1h1v1h-1zM12 1h1v1h-1zM14 1h1v1h-1zM16 1h1v1h-1zM17 1h1v1h-1zM18 1h1v1h-1zM19 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM9 2h1v1h-1zM12 2h1v1h-1zM15 2h1v1h-1zM17 2h1v1h-1zM20 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM26 2h1v1h-1zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM8 3h1v1h-1zM11 3h1v1h-1zM13 3h1v1h-1zM15 3h1v1h-1zM20 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM25 3h1v1h-1zM26 3h1v1h-1zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM11 4h1v1h-1zM12 4h1v1h-1zM14 4h1v1h-1zM15 4h1v1h-1zM16 4h1v1h-1zM17 4h1v1h-1zM18 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM26 4h1v1h-1zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM12 5h1v1h-1zM16 5h1v1h-1zM17 5h1v1h-1zM19 5h1v1h-1zM20 5h1v1h-1zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM25 6h1v1h-1zM26 6h1v1h-1zM27 6h1v1h-1zM28 6h1v1h-1zM8 7h1v1h-1zM11 7h1v1h-1zM12 7h1v1h-1zM14 7h1v1h-1zM15 7h1v1h-1zM17 7h1v1h-1zM0 8h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM11 8h1v1h-1zM12 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM17 8h1v1h-1zM20 8h1v1h-1zM21 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM25 8h1v1h-1zM28 8h1v1h-1zM2 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM8 9h1v1h-1zM9 9h1v1h-1zM14 9h1v1h-1zM15 9h1v1h-1zM16 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM24 9h1v1h-1zM25 9h1v1h-1zM26 9h1v1h-1zM27 9h1v1h-1zM28 9h1v1h-1zM0 10h1v1h-1zM1 10h1v1h-1zM2 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM10 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM14 10h1v1h-1zM15 10h1v1h-1zM16 10h1v1h-1zM17 10h1v1h-1zM21 10h1v1h-1zM22 10h1v1h-1zM28 10h1v1h-1zM2 11h1v1h-1zM3 11h1v1h-1zM5 11h1v1h-1zM8 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM15 11h1v1h-1zM17 11h1v1h-1zM18 11h1v1h-1zM20 11h1v1h-1zM23 11h1v1h-1zM24 11h1v1h-1zM25 11h1v1h-1zM27 11h1v1h-1zM28 11h1v1h-1zM2 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM12 12h1v1h-1zM13 12h1v1h-1zM16 12h1v1h-1zM17 12h1v1h-1zM19 12h1v1h-1zM21 12h1v1h-1zM27 12h1v1h-1zM0 13h1v1h-1zM1 13h1v1h-1zM3 13h1v1h-1zM4 13h1v1h-1zM5 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM11 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM17 13h1v1h-1zM18 13h1v1h-1zM22 13h1v1h-1zM23 13h1v1h-1zM24 13h1v1h-1zM25 13h1v1h-1zM26 13h1v1h-1zM27 13h1v1h-1zM28 13h1v1h-1zM0 14h1v1h-1zM1 14h1v1h-1zM2 14h1v1h-1zM3 14h1v1h-1zM4 14h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM7 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM12 14h1v1h-1zM15 14h1v1h-1zM18 14h1v1h-1zM20 14h1v1h-1zM24 14h1v1h-1zM25 14h1v1h-1zM26 14h1v1h-1zM28 14h1v1h-1zM1 15h1v1h-1zM2 15h1v1h-1zM3 15h1v1h-1zM5 15h1v1h-1zM7 15h1v1h-1zM9 15h1v1h-1zM11 15h1v1h-1zM14 15h1v1h-1zM15 15h1v1h-1zM16 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM22 15h1v1h-1zM27 15h1v1h-1zM28 15h1v1h-1zM0 16h1v1h-1zM1 16h1v1h-1zM3 16h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM10 16h1v1h-1zM11 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM20 16h1v1h-1zM23 16h1v1h-1zM27 16h1v1h-1zM0 17h1v1h-1zM1 17h1v1h-1zM4 17h1v1h-1zM7 17h1v1h-1zM9 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM17 17h1v1h-1zM18 17h1v1h-1zM21 17h1v1h-1zM22 17h1v1h-1zM23 17h1v1h-1zM24 17h1v1h-1zM25 17h1v1h-1zM27 17h1v1h-1zM28 17h1v1h-1zM4 18h1v1h-1zM6 18h1v1h-1zM7 18h1v1h-1zM9 18h1v1h-1zM12 18h1v1h-1zM13 18h1v1h-1zM14 18h1v1h-1zM15 18h1v1h-1zM16 18h1v1h-1zM18 18h1v1h-1zM20 18h1v1h-1zM21 18h1v1h-1zM22 18h1v1h-1zM26 18h1v1h-1zM28 18h1v1h-1zM2 19h1v1h-1zM4 19h1v1h-1zM5 19h1v1h-1zM8 19h1v1h-1zM9 19h1v1h-1zM11 19h1v1h-1zM12 19h1v1h-1zM13 19h1v1h-1zM15 19h1v1h-1zM17 19h1v1h-1zM18 19h1v1h-1zM19 19h1v1h-1zM20 19h1v1h-1zM21 19h1v1h-1zM27 19h1v1h-1zM28 19h1v1h-1zM0 20h1v1h-1zM1 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM5 20h1v1h-1zM6 20h1v1h-1zM8 20h1v1h-1zM11 20h1v1h-1zM13 20h1v1h-1zM15 20h1v1h-1zM17 20h1v1h-1zM19 20h1v1h-1zM20 20h1v1h-1zM21 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM24 20h1v1h-1zM25 20h1v1h-1zM28 20h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM11 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM16 21h1v1h-1zM19 21h1v1h-1zM20 21h1v1h-1zM24 21h1v1h-1zM28 21h1v1h-1zM0 22h1v1h-1zM1 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM8 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM12 22h1v1h-1zM15 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM25 22h1v1h-1zM26 22h1v1h-1zM28 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM9 23h1v1h-1zM10 23h1v1h-1zM11 23h1v1h-1zM14 23h1v1h-1zM15 23h1v1h-1zM17 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM24 23h1v1h-1zM27 23h1v1h-1zM0 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM12 24h1v1h-1zM13 24h1v1h-1zM14 24h1v1h-1zM16 24h1v1h-1zM17 24h1v1h-1zM19 24h1v1h-1zM20 24h1v1h-1zM21 24h1v1h-1zM22 24h1v1h-1zM23 24h1v1h-1zM24 24h1v1h-1zM25 24h1v1h-1zM27 24h1v1h-1zM0 25h1v1h-1zM2 25h1v1h-1zM3 25h1v1h-1zM4 25h1v1h-1zM6 25h1v1h-1zM9 25h1v1h-1zM12 25h1v1h-1zM15 25h1v1h-1zM16 25h1v1h-1zM17 25h1v1h-1zM18 25h1v1h-1zM19 25h1v1h-1zM28 25h1v1h-1zM0 26h1v1h-1zM2 26h1v1h-1zM3 26h1v1h-1zM4 26h1v1h-1zM6 26h1v1h-1zM9 26h1v1h-1zM13 26h1v1h-1zM14 26h1v1h-1zM15 26h1v1h-1zM17 26h1v1h-1zM19 26h1v1h-1zM20 26h1v1h-1zM25 26h1v1h-1zM26 26h1v1h-1zM27 26h1v1h-1zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM10 27h1v1h-1zM11 27h1v1h-1zM12 27h1v1h-1zM13 27h1v1h-1zM15 27h1v1h-1zM17 27h1v1h-1zM18 27h1v1h-1zM20 27h1v1h-1zM21 27h1v1h-1zM22 27h1v1h-1zM23 27h1v1h-1zM25 27h1v1h-1zM27 27h1v1h-1zM28 27h1v1h-1zM0 28h1v1h-1zM1 28h1v1h-1zM2 28h1v1h-1zM3 28h1v1h-1zM4 28h1v1h-1zM5 28h1v1h-1zM6 28h1v1h-1zM8 28h1v1h-1zM9 28h1v1h-1zM12 28h1v1h-1zM13 28h1v1h-1zM14 28h1v1h-1zM15 28h1v1h-1zM17 28h1v1h-1zM19 28h1v1h-1zM20 28h1v1h-1zM21 28h1v1h-1zM23 28h1v1h-1zM25 28h1v1h-1zM27 28h1v1h-1z"/></svg></div>
+    <p class="qr-url" id="qrUrl"></p>
+    <div class="qr-actions">
+      <button type="button" class="lien-bouton" id="qrCopier">Copier le lien</button>
+      <button type="button" class="lien-bouton" id="qrFermer">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const URL_PAGE = 'https://lewism21.github.io/simulateur/';
+
+const TVA = 0.06;                                           // pompe à chaleur : toutes les habitations
+const BESOIN = { bonne: 60, moyenne: 110, faible: 170 };   // kWh de chaleur par m² et par an
+const CO2_ELEC = 0.15;                                      // kg par kWh électrique
+const ENERGIES = {
+  mazout:  { nom: 'mazout',      rend: 0.85, co2: 0.267, prix: h => h.mazout / 10 },
+  gaz:     { nom: 'gaz',         rend: 0.90, co2: 0.202, prix: h => h.gaz },
+  elec:    { nom: 'électricité', rend: 1.00, co2: CO2_ELEC, prix: h => h.elec },
+  pellets: { nom: 'pellets',     rend: 0.85, co2: 0.030, prix: h => h.pellets / 4800 },
+};
+// Devis air/air envoyés depuis le 28/05/2026, HTVA, par nombre d'unités intérieures :
+// premier et troisième quartiles. 6 pièces et plus : projets trop différents, « à partir de »
+// (premier quartile des devis de 6 pièces).
+const FOURCHETTES = {
+  1: { bas: 3224, haut: 4137, n: 134 },
+  2: { bas: 4983, haut: 7073, n: 140 },
+  3: { bas: 6921, haut: 8495, n: 93 },
+  4: { bas: 9398, haut: 11840, n: 50 },
+  5: { bas: 11884, haut: 14113, n: 19 },
+  6: { bas: 13618, haut: null, n: 20 },
+};
+// Surfaces pré-remplies : la première pièce est souvent le salon ; en « 6+ », la dernière case regroupe le reste.
+const surfaceDefaut = (i, n) => (i === 0 || (n === 6 && i === 5) ? 30 : 14);
+const AIDE_FACTURE = {
+  mazout: 'Vos achats de mazout sur une année.',
+  gaz: 'Le montant de votre facture annuelle de gaz.',
+  elec: "La part chauffage de votre facture d'électricité, si vous la connaissez.",
+  pellets: 'Vos achats de pellets sur une année.',
+};
+const QUESTIONS = {
+  projet: { titre: 'Que voulez-vous faire ?', type: 'choix', options: [
+    { v: 'airair', t: 'Chauffer et rafraîchir des pièces', s: 'Climatisation réversible (air/air) : salon, chambres, bureau' },
+    { v: 'aireau', t: 'Remplacer ma chaudière', s: 'Pompe à chaleur air/eau sur vos radiateurs ou votre chauffage par le sol' },
+  ] },
+  pieces: { titre: 'Combien de pièces voulez-vous équiper ?', aide: 'Une unité intérieure par pièce.', type: 'choix', style: 'tuiles', options: [
+    { v: 1, t: '1' }, { v: 2, t: '2' }, { v: 3, t: '3' },
+    { v: 4, t: '4' }, { v: 5, t: '5' }, { v: 6, t: '6+', label: '6 pièces ou plus' },
+  ] },
+  surfaces: { titre: 'Quelle surface fait chaque pièce, à peu près ?', aide: 'Longueur × largeur suffit : une chambre de 4 × 3,5 m fait 14 m². Les cases sont pré-remplies avec des surfaces courantes.', type: 'pieces', min: 3, max: 500 },
+  emetteurs: { titre: 'Comment la chaleur arrive-t-elle dans vos pièces ?', aide: "Plus l'eau doit être chaude, moins la pompe à chaleur est efficace.", type: 'choix', options: [
+    { v: 'sol', t: 'Chauffage par le sol', s: 'Eau tiède, vers 35 °C' },
+    { v: 'bt', t: 'Radiateurs récents ou grands', s: 'Eau vers 45 à 55 °C' },
+    { v: 'ht', t: 'Radiateurs anciens', s: 'Eau très chaude, 65 °C ou plus' },
+  ] },
+  energie: { titre: "Comment vous chauffez-vous aujourd'hui ?", type: 'choix', style: 'deux', options: [
+    { v: 'mazout', t: 'Mazout' }, { v: 'gaz', t: 'Gaz naturel' },
+    { v: 'elec', t: 'Électricité', s: 'Convecteurs, accumulateurs' }, { v: 'pellets', t: 'Pellets' },
+  ] },
+  facture: { titre: 'Combien payez-vous par an pour vous chauffer ?', type: 'nombre', unite: '€ / an', min: 50, max: 20000 },
+  surfLogement: { titre: 'Quelle surface est chauffée chez vous ?', aide: 'Toutes les pièces chauffées par la chaudière, à peu près.', type: 'nombre', unite: 'm²', min: 20, max: 2000 },
+  isolation: { titre: 'Votre logement est-il bien isolé ?', type: 'choix', options: [
+    { v: 'bonne', t: 'Bien isolé', s: 'Construit ou rénové récemment : double vitrage, toiture et murs isolés' },
+    { v: 'moyenne', t: 'Moyennement', s: 'Quelques travaux : double vitrage, toiture en partie isolée' },
+    { v: 'faible', t: 'Peu isolé', s: 'Maison ancienne, simple vitrage ou murs non isolés' },
+  ] },
+};
+const PLACEHOLDER = { surfLogement: 'ex. 130', facture: 'ex. 1800' };
+
+const $ = id => document.getElementById(id);
+const fmt = n => new Intl.NumberFormat('fr-BE', { maximumFractionDigits: 0 }).format(n);
+const arrondi = (n, pas) => Math.round(n / pas) * pas;
+const euros = n => `${fmt(arrondi(n, 10))} €`;
+const lent = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let rep = {};
+let idx = 0;
+let verrou = false;
+
+// Air/air : l'économie ne porte que sur les pièces équipées, estimée d'après leur
+// surface et l'isolation. Air/eau : toute la maison, d'après la facture (ou la
+// surface chauffée et l'isolation si elle est inconnue).
+function parcours() {
+  if (rep.projet !== 'aireau') return ['projet', 'pieces', 'surfaces', 'energie', 'isolation'];
+  const p = ['projet', 'emetteurs', 'energie', 'facture'];
+  if (!rep.factureConnue) p.push('surfLogement', 'isolation');
+  return p;
+}
+
+function ajusterSurfaces() {
+  const n = rep.pieces;
+  const avant = rep.surfaces || [];
+  rep.surfaces = Array.from({ length: n }, (_, i) => avant[i] ?? surfaceDefaut(i, n));
+}
+
+function animer(el, sens) {
+  if (lent || !sens) return;
+  el.classList.remove('entree-avant', 'entree-arriere');
+  void el.offsetWidth;
+  el.classList.add(sens > 0 ? 'entree-avant' : 'entree-arriere');
+}
+
+function htmlChoix(cle, q) {
+  return `<div class="options ${q.style || ''}">` + q.options.map(o =>
+    `<button type="button" class="option" data-v="${o.v}" aria-pressed="${rep[cle] === o.v}"${o.label ? ` aria-label="${o.label}"` : ''}>`
+    + `<strong>${o.t}</strong>${o.s ? `<span>${o.s}</span>` : ''}</button>`).join('') + '</div>';
+}
+
+function htmlSaisie(cle, q) {
+  let v = rep[cle];
+  if (cle === 'facture') v = rep.factureConnue ? rep.facture : '';
+  return `<form class="saisie" id="fSaisie" novalidate>
+    <div class="champ grand"><input type="number" id="vNombre" inputmode="decimal" min="${q.min}" max="${q.max}" step="1" value="${v ?? ''}" placeholder="${PLACEHOLDER[cle]}" aria-labelledby="qTitre"><span class="unite">${q.unite}</span></div>
+    <p class="erreur" id="vErreur" hidden></p>
+    <div class="boutons"><button type="submit" class="primaire">Continuer</button>${cle === 'facture' ? '<button type="button" class="secondaire" id="btnInconnu">Je ne sais pas</button>' : ''}</div>
+  </form>`;
+}
+
+function htmlSurfaces(q) {
+  const n = rep.pieces;
+  const nom = i => (n === 6 && i === 5 ? 'Pièces 6 et suivantes (total)' : `Pièce ${i + 1}`);
+  return `<form class="saisie" id="fSaisie" novalidate>
+    <div class="pieces-liste">${rep.surfaces.map((s, i) =>
+      `<label class="piece" for="s${i}"><span>${nom(i)}</span><div class="champ"><input type="number" id="s${i}" inputmode="decimal" min="${q.min}" max="${q.max}" step="1" value="${s}"><span class="unite">m²</span></div></label>`).join('')}</div>
+    <p class="total">Total : <b id="sTotal"></b></p>
+    <p class="erreur" id="vErreur" hidden></p>
+    <div class="boutons"><button type="submit" class="primaire">Continuer</button></div>
+  </form>`;
+}
+
+function brancher(cle, q) {
+  if (q.type === 'choix') {
+    $('qCorps').querySelectorAll('.option').forEach(b => b.addEventListener('click', () => {
+      if (verrou) return;
+      verrou = true;
+      const v = q.options.find(o => String(o.v) === b.dataset.v).v;
+      rep[cle] = v;
+      if (cle === 'pieces') ajusterSurfaces();
+      $('qCorps').querySelectorAll('.option').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      setTimeout(suivant, lent ? 0 : 220);
+    }));
+    return;
+  }
+  if (q.type === 'pieces') {
+    const champs = [...$('qCorps').querySelectorAll('.piece input')];
+    const lire = () => champs.map(c => parseFloat(String(c.value).replace(',', '.')));
+    const total = () => {
+      const v = lire();
+      $('sTotal').textContent = v.every(Number.isFinite) ? `${fmt(v.reduce((a, b) => a + b, 0))} m²` : '—';
+    };
+    champs.forEach(c => c.addEventListener('input', total));
+    total();
+    $('fSaisie').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const v = lire();
+      const i = v.findIndex(x => !Number.isFinite(x) || x < q.min || x > q.max);
+      if (i >= 0) {
+        $('vErreur').textContent = `Indiquez une surface entre ${q.min} et ${q.max} m² pour chaque pièce.`;
+        $('vErreur').hidden = false;
+        champs[i].focus();
+        return;
+      }
+      rep.surfaces = v;
+      suivant();
+    });
+    return;
+  }
+  const champ = $('vNombre');
+  $('fSaisie').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const v = parseFloat(String(champ.value).replace(',', '.'));
+    if (!Number.isFinite(v) || v < q.min || v > q.max) {
+      $('vErreur').textContent = `Indiquez un nombre entre ${fmt(q.min)} et ${fmt(q.max)}.`;
+      $('vErreur').hidden = false;
+      champ.focus();
+      return;
+    }
+    if (cle === 'facture') { rep.facture = v; rep.factureConnue = true; } else rep[cle] = v;
+    suivant();
+  });
+  if (cle === 'facture') $('btnInconnu').addEventListener('click', () => { rep.factureConnue = false; suivant(); });
+}
+
+function afficherEtape(sens) {
+  verrou = false;
+  const p = parcours();
+  const cle = p[idx];
+  const q = QUESTIONS[cle];
+  $('resultat').hidden = true;
+  $('etape').hidden = false;
+  $('accueil').hidden = idx !== 0;
+  $('btnRetour').hidden = idx === 0;
+  $('progresTexte').textContent = `Question ${idx + 1} sur ${p.length}`;
+  $('progresBarre').style.width = `${(idx / p.length) * 100}%`;
+  $('qTitre').textContent = q.titre;
+  const aide = cle === 'facture' ? AIDE_FACTURE[rep.energie] : (q.aide || '');
+  $('qAide').textContent = aide;
+  $('qAide').hidden = !aide;
+  if (cle === 'surfaces') ajusterSurfaces();
+  $('qCorps').innerHTML = q.type === 'choix' ? htmlChoix(cle, q) : (q.type === 'pieces' ? htmlSurfaces(q) : htmlSaisie(cle, q));
+  brancher(cle, q);
+  animer($('etape'), sens);
+  if (sens) {
+    window.scrollTo({ top: 0 });
+    (q.type === 'nombre' ? $('vNombre') : $('qTitre')).focus({ preventScroll: true });
+  }
+}
+
+function suivant() {
+  idx += 1;
+  if (idx >= parcours().length) afficherResultat(true); else afficherEtape(1);
+}
+
+function precedent() {
+  if (!$('resultat').hidden) idx = parcours().length - 1;
+  else if (idx > 0) idx -= 1;
+  afficherEtape(-1);
+}
+
+function hyp() {
+  const n = id => { const v = parseFloat(String($(id).value).replace(',', '.')); return Number.isFinite(v) ? v : 0; };
+  return { elec: n('hElec'), mazout: n('hMazout'), gaz: n('hGaz'), pellets: n('hPellets'),
+           scopAA: n('hScopAA'), scopSol: n('hScopSol'), scopBT: n('hScopBT'), scopHT: n('hScopHT') };
+}
+
+function calculer(h) {
+  const e = ENERGIES[rep.energie];
+  const coutChaleur = e.prix(h) / e.rend;                  // € par kWh de chaleur utile
+  const airair = rep.projet !== 'aireau';
+  let q;                                                    // kWh de chaleur par an
+  if (airair) q = rep.surfaces.reduce((a, b) => a + b, 0) * BESOIN[rep.isolation];
+  else if (rep.factureConnue) q = coutChaleur > 0 ? rep.facture / coutChaleur : 0;
+  else q = rep.surfLogement * BESOIN[rep.isolation];
+  const scop = airair ? h.scopAA : { sol: h.scopSol, bt: h.scopBT, ht: h.scopHT }[rep.emetteurs];
+  const avant = q * coutChaleur;
+  const apres = scop > 0 ? q / scop * h.elec : 0;
+  const eco = avant - apres;
+  const co2 = q / e.rend * e.co2 - (scop > 0 ? q / scop * CO2_ELEC : 0);
+  return { e, avant, apres, eco, pct: avant > 0 ? eco / avant : 0, co2 };
+}
+
+function budget(res) {
+  if (rep.projet === 'aireau') {
+    return { prix: 'Sur visite', retour: '', longRetour: false,
+             legende: "Le budget dépend de la maison, des radiateurs et de l'eau chaude : nous le chiffrons après la visite gratuite. Des primes régionales peuvent s'appliquer." };
+  }
+  const f = FOURCHETTES[rep.pieces];
+  const bas = arrondi(f.bas, 100);
+  const haut = f.haut ? arrondi(f.haut, 100) : null;
+  const pieces = rep.pieces === 1 ? '1 pièce' : `${rep.pieces} pièces`;
+  const legende = haut
+    ? `D'après nos ${f.n} devis « ${pieces} » depuis fin mai 2026. Matériel, pose et mise en service compris, garantie jusqu'à 7 ans. Avant primes.`
+    : 'À partir de 6 pièces, chaque projet est différent (souvent plusieurs groupes extérieurs) : le prix se fixe à la visite. Avant primes.';
+  let retour = '';
+  if (res.eco > 0 && haut) {
+    // Le client paie la TVA : le retour sur investissement se calcule TVA comprise.
+    // Affiché seulement quand c'est un argument (10 ans au plus, ex. chauffage électrique).
+    const a = Math.max(1, Math.round(bas * (1 + TVA) / res.eco));
+    const b = Math.max(1, Math.round(haut * (1 + TVA) / res.eco));
+    if (b <= 10) retour = a === b ? `Rentabilisé en ${a} ans environ` : `Rentabilisé en ${a} à ${b} ans`;
+  }
+  return {
+    prix: haut ? `${fmt(bas)} – ${fmt(haut)} € <small>HTVA</small>` : `à partir de ${fmt(bas)} € <small>HTVA</small>`,
+    legende, retour,
+  };
+}
+
+function notes(res, b) {
+  const liste = [];
+  const airair = rep.projet !== 'aireau';
+  if (res.eco <= 0) {
+    liste.push(airair
+      ? `<b>Pas d'économie ici.</b> Le chauffage ${{ mazout: 'au mazout', gaz: 'au gaz', elec: "à l'électricité", pellets: 'aux pellets' }[rep.energie]} coûte déjà peu par kWh. L'intérêt de la pompe à chaleur serait le confort, avec la climatisation l'été.`
+      : "<b>Pas d'économie dans cette configuration.</b> À la visite, nous regardons ce qui fonctionne chez vous, par exemple des radiateurs basse température.");
+  } else if (res.pct < 0.2) {
+    liste.push(airair
+      ? "<b>Économie modeste.</b> Votre chauffage actuel coûte déjà peu par kWh. L'intérêt principal sera le confort, avec la climatisation l'été en plus."
+      : '<b>Économie modeste.</b> Une visite permet de voir si des radiateurs plus grands ou basse température changeraient la donne.');
+  }
+  if (!airair && rep.emetteurs === 'ht' && res.eco > 0) {
+    liste.push('<b>Radiateurs anciens :</b> nous vérifions à la visite qu\'ils chauffent assez avec de l\'eau à 55 °C.');
+  }
+  return liste;
+}
+
+function recap() {
+  const lib = {
+    projet: rep.projet === 'aireau' ? 'Remplacer la chaudière' : 'Chauffer et rafraîchir',
+    pieces: rep.pieces >= 6 ? '6 pièces et +' : `${rep.pieces} pièce${rep.pieces > 1 ? 's' : ''}`,
+    surfaces: `${fmt((rep.surfaces || []).reduce((a, b) => a + b, 0))} m² à équiper`,
+    emetteurs: { sol: 'Chauffage par le sol', bt: 'Radiateurs récents', ht: 'Radiateurs anciens' }[rep.emetteurs],
+    energie: { mazout: 'Mazout', gaz: 'Gaz naturel', elec: 'Électricité', pellets: 'Pellets' }[rep.energie],
+    facture: rep.factureConnue ? `${fmt(rep.facture)} € / an` : 'Facture inconnue',
+    surfLogement: `${fmt(rep.surfLogement)} m² chauffés`,
+    isolation: { bonne: 'Bien isolé', moyenne: 'Moyennement isolé', faible: 'Peu isolé' }[rep.isolation],
+  };
+  return '<span class="recap-lib">Vos réponses :</span>' + parcours().map(cle =>
+    `<button type="button" class="puce" data-cle="${cle}" title="Modifier">${lib[cle]}</button>`).join('');
+}
+
+function remplirResultat() {
+  const h = hyp();
+  const res = calculer(h);
+  const airair = rep.projet !== 'aireau';
+  const eco = Math.max(0, res.eco);
+  $('ecoVal').innerHTML = `${fmt(arrondi(eco, 10))} €<small>/ an</small>`;
+  $('ecoSous').textContent = res.eco <= 0
+    ? "pas d'économie attendue dans cette configuration"
+    : `soit ${Math.round(res.pct * 100)} % de moins ${airair ? 'pour chauffer les pièces équipées' : 'sur votre facture de chauffage'}`;
+  $('recap').innerHTML = recap();
+
+  $('avantLib').textContent = `Aujourd'hui (${res.e.nom}${airair || !rep.factureConnue ? ', estimé' : ''})`;
+  $('avantVal').textContent = `${euros(res.avant)} / an`;
+  $('apresVal').textContent = `${euros(res.apres)} / an`;
+  const max = Math.max(res.avant, res.apres, 1);
+  $('avantBarre').style.width = `${(res.avant / max) * 100}%`;
+  $('apresBarre').style.width = `${(res.apres / max) * 100}%`;
+
+  $('quinzeVal').textContent = res.eco > 0 ? euros(res.eco * 15) : '—';
+  $('co2Val').textContent = `${Math.max(0, res.co2 / 1000).toFixed(1).replace('.', ',')} t`;
+
+  const b = budget(res);
+  $('budgetLib').textContent = airair ? 'Votre budget, pose comprise' : 'Votre budget';
+  $('prixVal').innerHTML = b.prix;
+  $('prixLegende').textContent = b.legende;
+  $('rentab').hidden = !b.retour;
+  $('rentab').textContent = b.retour;
+  $('notes').innerHTML = notes(res, b).map(n => `<p class="note">${n}</p>`).join('');
+}
+
+function afficherResultat(nav) {
+  verrou = false;
+  $('etape').hidden = true;
+  $('resultat').hidden = false;
+  $('btnRetour').hidden = false;
+  $('progresTexte').textContent = 'Votre résultat';
+  $('progresBarre').style.width = '100%';
+  remplirResultat();
+  if (nav) {
+    animer($('resultat'), 1);
+    window.scrollTo({ top: 0 });
+    $('resTitre').focus({ preventScroll: true });
+  }
+}
+
+$('btnRetour').addEventListener('click', precedent);
+$('recap').addEventListener('click', ev => {
+  const puce = ev.target.closest('.puce');
+  if (!puce) return;
+  idx = parcours().indexOf(puce.dataset.cle);
+  afficherEtape(-1);
+});
+$('hypotheses').addEventListener('input', remplirResultat);
+$('btnRecommencer').addEventListener('click', () => {
+  rep = {}; idx = 0;
+  $('demande').reset(); $('merci').hidden = true; $('dErreur').hidden = true;
+  afficherEtape(-1);
+});
+
+$('demande').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const manque = [];
+  if (!$('dNom').value.trim()) manque.push('votre nom');
+  if (!$('dTel').value.trim()) manque.push('un numéro de téléphone');
+  if (!$('dAccord').checked) manque.push('votre accord pour être recontacté');
+  $('dErreur').hidden = !manque.length;
+  $('dErreur').textContent = manque.length ? `Il manque ${manque.join(', ')}.` : '';
+  $('merci').hidden = !!manque.length;
+});
+
+// Fenêtre QR code
+$('qrUrl').textContent = URL_PAGE;
+const fermerQR = () => { $('qr').hidden = true; $('btnQR').focus(); };
+$('btnQR').addEventListener('click', () => { $('qr').hidden = false; $('qrFermer').focus(); });
+$('qrFermer').addEventListener('click', fermerQR);
+$('qr').addEventListener('click', ev => { if (ev.target === $('qr')) fermerQR(); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('qr').hidden) fermerQR(); });
+$('qrCopier').addEventListener('click', () => {
+  const ok = () => { $('qrCopier').textContent = 'Lien copié'; };
+  const repli = () => {
+    const s = window.getSelection(), rg = document.createRange();
+    rg.selectNodeContents($('qrUrl')); s.removeAllRanges(); s.addRange(rg);
+    $('qrCopier').textContent = 'Lien sélectionné';
+  };
+  try { navigator.clipboard.writeText(URL_PAGE).then(ok, repli); } catch (_) { repli(); }
+});
+
+afficherEtape(0);
+</script>
+
+</body>
+</html>
