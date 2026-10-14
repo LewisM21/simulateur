@@ -10,9 +10,64 @@ body { margin: 0; }
 img { max-width: 100%; }
 </style>
 <title>Simulateur Clim'O'Froid</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Archivo latin-ext */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 500 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url(polices/archivo-500-900-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* Archivo latin */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 500 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url(polices/archivo-500-900-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* Atkinson Hyperlegible latin-ext */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(polices/atkinson-hyperlegible-400-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* Atkinson Hyperlegible latin */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(polices/atkinson-hyperlegible-400-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* Atkinson Hyperlegible latin-ext */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(polices/atkinson-hyperlegible-700-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* Atkinson Hyperlegible latin */
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(polices/atkinson-hyperlegible-700-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
 <style>
 /* Mise en page : une question par écran dans une colonne étroite, puis le résultat sur le même fil */
 :root {
@@ -178,17 +233,12 @@ button:focus-visible, summary:focus-visible { outline: 3px solid var(--brand); o
 .legende { font-size: 14px; color: var(--muted); }
 .rentab { justify-self: start; padding: 4px 12px; border-radius: 999px; background: var(--vert-soft); font-weight: 700; font-size: 15px; }
 
-.cta form { display: grid; gap: 12px; }
-.duo { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 480px) { .duo { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.cta label.l { display: grid; gap: 4px; font-size: 14px; font-weight: 700; min-width: 0; }
-.cta input[type="text"], .cta input[type="tel"], .cta input[type="email"] {
-  width: 100%; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 16px; font-weight: 400;
-}
-.cta input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
-.case { display: inline-flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 14px; }
-.case input { width: 20px; height: 20px; margin-top: 1px; flex: none; accent-color: var(--brand); }
-.merci { padding: 12px 14px; border-radius: 10px; background: var(--vert-soft); font-size: 15px; }
+/* Contact : appel, ou e-mail préparé dans la messagerie du visiteur. La page n'envoie rien. */
+.cta-texte { max-width: 56ch; }
+.contact a { display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; }
+.contact a svg { width: 20px; height: 20px; flex: none; }
+.contact a.secondaire { color: var(--ink); }
+.contact a:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
 
 .hypotheses { border-top: 1px solid var(--line); padding-top: 18px; }
 .hypotheses summary { cursor: pointer; font-family: var(--f-titre); font-weight: 700; font-size: 18px; font-stretch: 104%; }
@@ -218,7 +268,7 @@ button:focus-visible, summary:focus-visible { outline: 3px solid var(--brand); o
 </head>
 <body>
 <div class="bandeau">
-  <span><strong>Version de test</strong> · aucune donnée n'est envoyée</span>
+  <span><strong>Clim'O'Froid</strong> · Soignies</span>
   <button type="button" class="lien-bouton" id="btnQR" aria-haspopup="dialog">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
     Ouvrir sur un autre appareil
@@ -281,20 +331,18 @@ button:focus-visible, summary:focus-visible { outline: 3px solid var(--brand); o
 
     <div class="bloc cta">
       <h2>Le prix exact, après une visite gratuite</h2>
-      <form id="demande" novalidate>
-        <div class="duo">
-          <label class="l" for="dNom">Nom<input type="text" id="dNom" autocomplete="name"></label>
-          <label class="l" for="dTel">Téléphone<input type="tel" id="dTel" autocomplete="tel"></label>
-        </div>
-        <div class="duo">
-          <label class="l" for="dEmail">E-mail<input type="email" id="dEmail" autocomplete="email"></label>
-          <label class="l" for="dCommune">Commune<input type="text" id="dCommune" autocomplete="address-level2"></label>
-        </div>
-        <label class="case" for="dAccord"><input type="checkbox" id="dAccord"> J'accepte d'être recontacté pour cette demande. Mes coordonnées ne servent à rien d'autre.</label>
-        <p class="note" id="dErreur" hidden></p>
-        <button type="submit" class="primaire">Demander ma visite gratuite</button>
-        <p class="merci" id="merci" hidden><b>Version de test :</b> rien n'a été envoyé. Dans la version en ligne, la demande arrivera au bureau par e-mail avec le résumé de cette simulation.</p>
-      </form>
+      <p class="cta-texte">Appelez-nous, ou envoyez-nous cette simulation par e-mail : nous vous recontactons pour fixer la visite.</p>
+      <div class="boutons contact">
+        <a class="primaire" id="btnAppel" href="tel:+3267490111">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>
+          Appeler le 067 49 01 11
+        </a>
+        <a class="secondaire" id="btnEmail" href="mailto:info@climofroid.be">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          Envoyer ma simulation par e-mail
+        </a>
+      </div>
+      <p class="legende">L'e-mail s'ouvre dans votre messagerie avec la simulation déjà rédigée : ajoutez vos coordonnées et envoyez. Vous pouvez aussi écrire à <a href="mailto:info@climofroid.be">info@climofroid.be</a>. Cette page n'enregistre et n'envoie rien.</p>
       <div class="boutons"><button type="button" class="secondaire" id="btnRecommencer">Recommencer la simulation</button></div>
     </div>
 
@@ -619,8 +667,8 @@ function notes(res, b) {
   return liste;
 }
 
-function recap() {
-  const lib = {
+function libelles() {
+  return {
     projet: rep.projet === 'aireau' ? 'Remplacer la chaudière' : 'Chauffer et rafraîchir',
     pieces: rep.pieces >= 6 ? '6 pièces et +' : `${rep.pieces} pièce${rep.pieces > 1 ? 's' : ''}`,
     surfaces: `${fmt((rep.surfaces || []).reduce((a, b) => a + b, 0))} m² à équiper`,
@@ -630,6 +678,10 @@ function recap() {
     surfLogement: `${fmt(rep.surfLogement)} m² chauffés`,
     isolation: { bonne: 'Bien isolé', moyenne: 'Moyennement isolé', faible: 'Peu isolé' }[rep.isolation],
   };
+}
+
+function recap() {
+  const lib = libelles();
   return '<span class="recap-lib">Vos réponses :</span>' + parcours().map(cle =>
     `<button type="button" class="puce" data-cle="${cle}" title="Modifier">${lib[cle]}</button>`).join('');
 }
@@ -662,6 +714,29 @@ function remplirResultat() {
   $('rentab').hidden = !b.retour;
   $('rentab').textContent = b.retour;
   $('notes').innerHTML = notes(res, b).map(n => `<p class="note">${n}</p>`).join('');
+  $('btnEmail').href = lienEmail(res, b);
+}
+
+// E-mail préparé dans la messagerie du visiteur : c'est lui qui l'envoie,
+// la page ne transmet ni ne garde rien.
+function lienEmail(res, b) {
+  const lib = libelles();
+  const eco = res.eco > 0
+    ? `${fmt(arrondi(res.eco, 10))} € par an (${Math.round(res.pct * 100)} % de moins)`
+    : "pas d'économie attendue dans cette configuration";
+  const corps = [
+    'Bonjour,', '',
+    'Je souhaite une visite gratuite pour mon projet de pompe à chaleur.', '',
+    'Ma simulation :',
+    `- ${parcours().map(cle => lib[cle]).join(' · ')}`,
+    `- Économie estimée : ${eco}`,
+    `- Budget indicatif : ${b.prix.replace(/<[^>]+>/g, '')}`, '',
+    'Mes coordonnées :',
+    'Nom : ', 'Téléphone : ', 'Commune : ', '',
+    'Merci.',
+  ].join('\r\n');
+  return 'mailto:info@climofroid.be?subject=' + encodeURIComponent('Demande de visite gratuite (simulateur)')
+    + '&body=' + encodeURIComponent(corps);
 }
 
 function afficherResultat(nav) {
@@ -689,19 +764,7 @@ $('recap').addEventListener('click', ev => {
 $('hypotheses').addEventListener('input', remplirResultat);
 $('btnRecommencer').addEventListener('click', () => {
   rep = {}; idx = 0;
-  $('demande').reset(); $('merci').hidden = true; $('dErreur').hidden = true;
   afficherEtape(-1);
-});
-
-$('demande').addEventListener('submit', ev => {
-  ev.preventDefault();
-  const manque = [];
-  if (!$('dNom').value.trim()) manque.push('votre nom');
-  if (!$('dTel').value.trim()) manque.push('un numéro de téléphone');
-  if (!$('dAccord').checked) manque.push('votre accord pour être recontacté');
-  $('dErreur').hidden = !manque.length;
-  $('dErreur').textContent = manque.length ? `Il manque ${manque.join(', ')}.` : '';
-  $('merci').hidden = !!manque.length;
 });
 
 // Fenêtre QR code
